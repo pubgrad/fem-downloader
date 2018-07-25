@@ -6,7 +6,7 @@ From the project root type:
 ```
 yarn install
 ```
-Note that Puppeteer installation will donwload a version of Chromium compatible with your os.
+Note that Puppeteer installation will download a version of Chromium compatible with your os.
 
 ## Usage
 From the command line type:
