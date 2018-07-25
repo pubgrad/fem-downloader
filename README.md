@@ -29,7 +29,7 @@ This is not intended as a mean to software piracy.
 You are not allowed to redistribute or publish any course you will download with this tool and therefore I **strongly discourage**
 this kind of usage.
 
-The sole purpose of this piece of software is to provide a mean to Frontend Masters subscribers to download for personal use the courses they like more.
+The sole purpose of this piece of software is to provide a mean to Frontend Masters subscribers to download the courses they like more for **exclusive personal use**.
 
 
 ## License
