@@ -24,12 +24,12 @@ Nevertheless, if you find any bugs or if you'd like to ask for new functionaliti
 Lessons are downloaded serially so the speed of the whole process will heavily depend on your internet connection.
 
 ## Disclaimer
-This is not intended as a mean to software piracy.
+This is not intended as a means of software piracy.
 
 You are not allowed to redistribute or publish any course you will download with this tool and therefore I **strongly discourage**
 this kind of usage.
 
-The sole purpose of this piece of software is to provide a mean to Frontend Masters subscribers to download the courses they like more for **exclusive personal use**.
+The sole purpose of this piece of software is to provide a way to Frontend Masters subscribers to download the courses they like more for **exclusive personal use**.
 
 
 ## License
