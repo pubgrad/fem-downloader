@@ -9,7 +9,6 @@ const compose = require("ramda/src/compose");
 const Maybe = require("crocks/Maybe");
 const { Nothing } = Maybe;
 const I = a => a;
-const proxy = "83.149.70.159:13012";
 const { restore, persist } = Persist;
 
 // identityToAsync :: a → Async a
@@ -27,7 +26,7 @@ function api() {
       puppeteer
         .launch({
           headless: false,
-          args: ["--no-sandbox"] //, '--proxy-server=' + proxy]
+          args: ["--no-sandbox"]
         })
         .then(browser => persist("browser", browser))
         .then(res)
