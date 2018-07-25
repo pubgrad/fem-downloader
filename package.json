@@ -1,0 +1,15 @@
+{
+  "scripts": {
+    "prettier": "prettier"
+  },
+  "dependencies": {
+    "command-line-args": "^5.0.2",
+    "crocks": "^0.9.4",
+    "puppeteer": "^1.6.0",
+    "ramda": "^0.25.0",
+    "slugify": "^1.3.0"
+  },
+  "devDependencies": {
+    "prettier": "^1.13.7"
+  }
+}
