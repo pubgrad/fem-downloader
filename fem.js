@@ -36,7 +36,30 @@ const persistCookies = ({ page, cookies }) =>
     res(page);
   });
 
-const buildDirTree = courseSlug => page =>
+function searchr(dest = [], [head, ...rest], needle, found = false) {
+  if (!head) return dest;
+  if (found || head.includes(needle))
+    return searchr(dest.concat(head), rest, needle, true);
+  return searchr([], rest, needle, false);
+}
+
+function allLessonsFrom(result, lessonGroup) {
+  if (result.found)
+    return {
+      lessonGroups: result.lessonGroups.concat(lessonGroup),
+      found: true
+    };
+  const retrieved = searchr([], lessonGroup.lessons, fromLesson);
+
+  if (retrieved.length)
+    return {
+      lessonGroups: [Object.assign({}, lessonGroup, { lessons: retrieved })],
+      found: true
+    };
+  return { lessonGroups: [], found: false };
+}
+
+const buildDirTree = (courseSlug, fromLesson="") => page =>
   Async((rej, res) => {
     (async function() {
       const lessons = await page.evaluate(function getLessons() {
@@ -60,20 +83,30 @@ const buildDirTree = courseSlug => page =>
       const newKeys = lessons.map(o =>
         slugify(Object.keys(o)[0].toLowerCase())
       );
+      {
+        let slugLessons = lessons.map((l, index) => ({
+          title: `${index}-${newKeys[index]}`,
+          index: index,
+          lessons: l[Object.keys(l)[0]]
+        }));
 
-      const slugLessons = lessons.map((l, index) => ({
-        title: `${index}-${newKeys[index]}`,
-        index: index,
-        lessons: l[Object.keys(l)[0]]
-      }));
+        if (fromLesson.length > 0) {
+          slugLessons.reduce(allLessonsFrom, {
+            lessonGroups: [],
+            found: false
+          });
+        } else {
+          slugLessons = { lessonGroups: slugLessons };
+        }
+        if (!fs.existsSync(courseSlug)) fs.mkdirSync(courseSlug);
 
-      if (!fs.existsSync(courseSlug)) fs.mkdirSync(courseSlug);
-      slugLessons
-        .map(lesson => lesson.title)
-        .map(title => `./${courseSlug}/${title}`)
-        .map(dir => (!fs.existsSync(dir) ? fs.mkdirSync(dir) : null));
+        slugLessons.lessonGroups
+          .map(lesson => lesson.title)
+          .map(title => `./${courseSlug}/${title}`)
+          .map(dir => (!fs.existsSync(dir) ? fs.mkdirSync(dir) : null));
 
-      res({ page, slugLessons });
+        res({ page, slugLessons: slugLessons.lessonGroups });
+      }
     })();
   });
 
