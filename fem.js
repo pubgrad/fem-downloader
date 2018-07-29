@@ -1,9 +1,15 @@
 const Async = require("crocks/Async");
+const Either = require("crocks/Either");
+const identity = require("crocks/combinators/identity");
+const prop = require("ramda/src/prop");
 const fs = require("fs");
 const https = require("https");
 const slugify = require("slugify");
 const Persist = require("./persist").Persist;
 const { restore, persist } = Persist;
+const { Left, Right } = Either;
+
+const stringToEither = s => s.length ? Right(s) : Left(s);
 
 const femGoto = url => page =>
   Async((rej, res) => {
@@ -38,8 +44,8 @@ const persistCookies = ({ page, cookies }) =>
 
 function searchr(dest = [], [head, ...rest], needle, found = false) {
   if (!head) return dest;
-  if (found || head.includes(needle))
-    return searchr(dest.concat(head), rest, needle, true);
+  if (found || head.includes(needle)) 
+    return dest.concat(head).concat(rest);
   return searchr([], rest, needle, false);
 }
 
@@ -90,17 +96,16 @@ const buildDirTree = (courseSlug, fromLesson="") => page =>
           lessons: l[Object.keys(l)[0]]
         }));
 
-        if (fromLesson.length > 0) {
-          slugLessons.reduce(allLessonsFrom, {
+        slugLessons = stringToEither(fromLesson)
+        .map(lessons => lessons.reduce(allLessonsFrom, {
             lessonGroups: [],
             found: false
-          });
-        } else {
-          slugLessons = { lessonGroups: slugLessons };
-        }
+          })
+        .either(identity, prop("lessonGroups"));
+                  
         if (!fs.existsSync(courseSlug)) fs.mkdirSync(courseSlug);
 
-        slugLessons.lessonGroups
+        slugLessons
           .map(lesson => lesson.title)
           .map(title => `./${courseSlug}/${title}`)
           .map(dir => (!fs.existsSync(dir) ? fs.mkdirSync(dir) : null));
