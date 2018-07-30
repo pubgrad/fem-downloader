@@ -1,6 +1,8 @@
 const Async = require("crocks/Async");
 const Either = require("crocks/Either");
 const identity = require("crocks/combinators/identity");
+const partial = require("crocks/helpers/partial");
+const constant = require("crocks/combinators/constant");
 const prop = require("ramda/src/prop");
 const fs = require("fs");
 const https = require("https");
@@ -9,7 +11,7 @@ const Persist = require("./persist").Persist;
 const { restore, persist } = Persist;
 const { Left, Right } = Either;
 
-const stringToEither = s => s.length ? Right(s) : Left(s);
+const stringToEither = s => (s.length ? Right(s) : Left(s));
 
 const femGoto = url => page =>
   Async((rej, res) => {
@@ -28,44 +30,16 @@ const femLogin = (username, password) => page => {
   });
 };
 
-const getCookies = page =>
-  Async((rej, res) =>
-    page
-      .cookies()
-      .then(cookies => res({ page, cookies }))
-      .catch(e => rej(e))
-  );
+const allLessonsFrom = (fromLesson, found = false) => lesson => {
+  if (found) return true;
+  if (lesson.includes(fromLesson)) {
+    found = true;
+    return true;
+  }
+  return false;
+};
 
-const persistCookies = ({ page, cookies }) =>
-  Async((rej, res) => {
-    persist("cookies", cookies);
-    res(page);
-  });
-
-function searchr(dest = [], [head, ...rest], needle, found = false) {
-  if (!head) return dest;
-  if (found || head.includes(needle)) 
-    return dest.concat(head).concat(rest);
-  return searchr([], rest, needle, false);
-}
-
-function allLessonsFrom(result, lessonGroup) {
-  if (result.found)
-    return {
-      lessonGroups: result.lessonGroups.concat(lessonGroup),
-      found: true
-    };
-  const retrieved = searchr([], lessonGroup.lessons, fromLesson);
-
-  if (retrieved.length)
-    return {
-      lessonGroups: [Object.assign({}, lessonGroup, { lessons: retrieved })],
-      found: true
-    };
-  return { lessonGroups: [], found: false };
-}
-
-const buildDirTree = (courseSlug, fromLesson="") => page =>
+const buildDirTree = (courseSlug, fromLesson = "") => page =>
   Async((rej, res) => {
     (async function() {
       const lessons = await page.evaluate(function getLessons() {
@@ -90,19 +64,21 @@ const buildDirTree = (courseSlug, fromLesson="") => page =>
         slugify(Object.keys(o)[0].toLowerCase())
       );
       {
-        let slugLessons = lessons.map((l, index) => ({
-          title: `${index}-${newKeys[index]}`,
-          index: index,
-          lessons: l[Object.keys(l)[0]]
-        }));
+        let slugLessons = lessons
+          .map((l, index) => ({
+            title: `${index}-${newKeys[index]}`,
+            index: index,
+            lessons: l[Object.keys(l)[0]]
+          }))
+          .map(lessonGroup =>
+            stringToEither(fromLesson)
+              .map(fromLesson => allLessonsFrom(fromLesson))
+              .map(onlyFromLesson => lessonGroup.lessons.filter(onlyFromLesson))
+              .either(constant(lessonGroup), ll =>
+                Object.assign({}, lessonGroup, { lessons: ll })
+              )
+          );
 
-        slugLessons = stringToEither(fromLesson)
-        .map(lessons => lessons.reduce(allLessonsFrom, {
-            lessonGroups: [],
-            found: false
-          })
-        .either(identity, prop("lessonGroups"));
-                  
         if (!fs.existsSync(courseSlug)) fs.mkdirSync(courseSlug);
 
         slugLessons
@@ -110,7 +86,7 @@ const buildDirTree = (courseSlug, fromLesson="") => page =>
           .map(title => `./${courseSlug}/${title}`)
           .map(dir => (!fs.existsSync(dir) ? fs.mkdirSync(dir) : null));
 
-        res({ page, slugLessons: slugLessons.lessonGroups });
+        res({ page, slugLessons });
       }
     })();
   });
@@ -179,7 +155,5 @@ module.exports = {
   femLogin,
   buildDirTree,
   downloadVideos,
-  getCookies,
-  persistCookies,
   femGoto
 };
