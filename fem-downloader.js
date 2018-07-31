@@ -5,7 +5,6 @@ const {
   femGoto,
   buildDirTree,
   downloadVideos,
-  getCookies,
   persistCookies
 } = require("./fem");
 
