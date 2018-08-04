@@ -1,4 +1,6 @@
 const Async = require("crocks/Async");
+const spinner = require("./spinner").spinner;
+const log = require("single-line-log").stdout;
 const Either = require("crocks/Either");
 const identity = require("crocks/combinators/identity");
 const partial = require("crocks/helpers/partial");
@@ -124,8 +126,10 @@ const downloadVideoLesson = page => async (
       );
       resp.on("data", function(chunk) {
         file.write(chunk);
+        log(spinner());
       });
       resp.on("end", function() {
+        log("");
         console.log(`${new Date().toLocaleTimeString()}: Download finished`);
         file.end();
         resolve(true);

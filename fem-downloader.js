@@ -1,5 +1,6 @@
 const commandLineArgs = require("command-line-args");
 const { init } = require("./api");
+const Async = require("crocks/Async");
 const {
   femLogin,
   femGoto,
@@ -37,7 +38,8 @@ const optionDefinitions = [
   {
     name: "course",
     alias: "c",
-    type: String
+    type: String,
+    multiple: true
   },
   {
     name: "from",
@@ -50,7 +52,7 @@ const options = commandLineArgs(optionDefinitions);
 
 const { username, password, course, from } = options;
 
-femDownload(username, password, course, from).fork(
-  e => log("Error: ", e),
-  s => log("Success: ", s)
-);
+course
+  .map(title => femDownload(username, password, title, from))
+  .reduce((pipe, fn) => pipe.chain(() => fn), Async.Resolved())
+  .fork(e => log("Error: ", e), s => log("Success: ", s));
