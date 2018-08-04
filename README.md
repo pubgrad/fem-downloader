@@ -11,12 +11,13 @@ Note that Puppeteer installation will download a version of Chromium compatible 
 ## Usage
 From the command line type:
 ```
-node fem-download.js --username <your-username> --password <your-password> --course <course-slug>
+node fem-download.js --username <your-username> --password <your-password> --course <course1-slug> [course2-slug] [course3-slug]
 ```
 1. Puppeteer will open a browser window and will log in to Frontend Masters using the provided credentials.
 1. After logging in, it will go to the main page of the course you selected and begin downloading its lessons one by one.
 1. The course will be downloaded into the project root, in its own folder, and each lesson will have its slug name.
 1. Each lesson group will have its separate folder and each lesson will be prepended with a number reflecting its order.
+1. You can download more than one course by appending their slug after the first one you provide
 
 ## Notes
 As of today, 07/25/2018, I have been using it to download a few short and long courses and it has been working smoothly.
