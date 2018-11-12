@@ -26,7 +26,7 @@ const femLogin = (username, password) => page => {
       await page.type("#username", username);
       await page.type("#password", password);
       await page.type("#password", String.fromCharCode(13));
-      await page.waitForSelector("header.CourseHeader");
+      await page.waitForSelector("header.CourseHeader", { timeout: 0 });
       res(page);
     })();
   });
