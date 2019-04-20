@@ -23,10 +23,17 @@ const femGoto = url => page =>
 const femLogin = (username, password) => page => {
   return Async((rej, res) => {
     (async function() {
-      await page.type("#username", username);
-      await page.type("#password", password);
-      await page.type("#password", String.fromCharCode(13));
-      await page.waitForSelector("header.CourseHeader", { timeout: 0 });
+      try {
+        await page.type('#username', username, { delay: 50 });
+        await page.type('#password', 'dash-dash-432', { delay: 50 });
+        await page.type('#password', String.fromCharCode(13));
+        await page.waitForSelector('div.Message.MessageAlert', { timeout: 0 });
+        await page.type('#password', password, { delay: 50 });
+        await page.type('#password', String.fromCharCode(13));
+        await page.waitForSelector('h1.DashboardHeader', { timeout: 0 });
+      } catch (e) {
+        rej(e);
+      }
       res(page);
     })();
   });
