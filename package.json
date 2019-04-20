@@ -4,8 +4,10 @@
   },
   "dependencies": {
     "command-line-args": "^5.0.2",
+    "commander": "^2.20.0",
     "crocks": "^0.9.4",
     "debounce": "^1.1.0",
+    "inquirer": "^6.3.1",
     "puppeteer": "^1.6.0",
     "ramda": "^0.25.0",
     "single-line-log": "^1.1.2",
