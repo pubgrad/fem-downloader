@@ -61,6 +61,10 @@ const questions = [
 
   [slug]
     .map(title => femDownload(username, password, title, headless, from))
+  const answers = await inquirer.prompt(questions);
+
+  course
+    .map(title => femDownload(username, password, title, from))
     .reduce((pipe, fn) => pipe.chain(() => fn), Async.Resolved())
     .fork(e => log('Error: ', e), s => log('Success: ', s));
 })();
