@@ -1,12 +1,12 @@
-const puppeteer = require("puppeteer");
-const Async = require("crocks/Async");
-const pipeK = require("crocks/helpers/pipeK");
-const Persist = require("./persist").Persist;
+const puppeteer = require('puppeteer');
+const Async = require('crocks/Async');
+const pipeK = require('crocks/helpers/pipeK');
+const Persist = require('./persist').Persist;
 const defaultUserAgent =
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.79 Safari/537.36";
-const curry = require("ramda/src/curry");
-const compose = require("ramda/src/compose");
-const Maybe = require("crocks/Maybe");
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.79 Safari/537.36';
+const curry = require('ramda/src/curry');
+const compose = require('ramda/src/compose');
+const Maybe = require('crocks/Maybe');
 const { Nothing } = Maybe;
 const I = a => a;
 const { restore, persist } = Persist;
@@ -21,21 +21,21 @@ const identityToAsync = compose(
 const foldMaybe = m => m.option(identityToAsync);
 
 function api() {
-  const createBrowser = () =>
+  const createBrowser = headless =>
     Async((rej, res) =>
       puppeteer
         .launch({
-          headless: false,
-          args: ["--no-sandbox"]
+          headless,
+          args: ['--no-sandbox']
         })
-        .then(browser => persist("browser", browser))
+        .then(browser => persist('browser', browser))
         .then(res)
         .catch(rej)
     );
 
   // getBrowser :: () → Async Browser
   const getBrowser = () =>
-    restore("browser") ? Async.Resolved(restore("browser")) : createBrowser;
+    restore('browser') ? Async.Resolved(restore('browser')) : createBrowser;
 
   // closeBrowser :: Async Browser → Async ()
   const closeBrowser = () =>
@@ -63,7 +63,7 @@ function api() {
       page
         .goto(url, {
           timeout: 25000,
-          waitUntil: ["domcontentloaded"]
+          waitUntil: ['domcontentloaded']
         })
         .then(res.bind(null, page))
         .catch(message => rej(message))
@@ -81,19 +81,19 @@ function api() {
   const getContent = page =>
     Async(
       (rej, res) =>
-        typeof page === "object"
+        typeof page === 'object'
           ? page
               .content()
               .then(res)
               .catch(res)
-          : rej("No page object available")
+          : rej('No page object available')
     );
 
   // failOnCaptcha :: Async Page → Async Page | Async Error
   const failOnCaptcha = page =>
     Async((rej, res) =>
       page
-        .waitForSelector(".g-recaptcha", {
+        .waitForSelector('.g-recaptcha', {
           timeout: 1500
         })
         .then(
@@ -109,7 +109,7 @@ function api() {
   const getText = page =>
     Async(
       (rej, res) =>
-        typeof page !== "string"
+        typeof page !== 'string'
           ? page
               .evaluate(() => document.body.innerText)
               .then(res)
@@ -118,14 +118,13 @@ function api() {
     );
 
   // getPage :: ( Url → String ) → Async Page
-  getPage = curry((url, ua = defaultUserAgent) =>
+  getPage = curry((url, headless) =>
     pipeK(
-      createBrowser,
+      () => createBrowser(headless),
       getNewPage,
       enableJs,
-      setUserAgent(ua),
-      goto(url),
-      failOnCaptcha
+      setUserAgent(defaultUserAgent),
+      goto(url)
     )
   );
 
@@ -138,7 +137,7 @@ function api() {
         enableJs,
         setUserAgent(ua),
         goto(url),
-        failOnCaptcha,
+        //       failOnCaptcha,
         foldMaybe(failCondition),
         getContent
       )
@@ -150,7 +149,7 @@ function api() {
     getNewPage,
     enableJs,
     setUserAgent(defaultUserAgent),
-    goto("https://api.ipify.org/"),
+    goto('https://api.ipify.org/'),
     getText
   );
 
