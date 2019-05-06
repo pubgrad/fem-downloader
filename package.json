@@ -19,7 +19,8 @@
   ],
   "author": "Cristian Gabbanini",
   "scripts": {
-    "prettier": "prettier"
+    "prettier": "prettier",
+    "test": "echo 'success'"
   },
   "dependencies": {
     "cli-progress": "^2.1.1",

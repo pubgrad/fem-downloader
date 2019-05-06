@@ -3,6 +3,7 @@
 [![License][licence-badge]](#license)
 [![Min NodeJs][node-badge]][node]
 [![Dependencies][dependencies-badge]][dependencies-badge]
+[![Build Status][build-status]][repo-url]
 
 Based on Nodejs and Puppeteer, you can launch it from the command line providing your credentials and it will download the course of your choice.
 
@@ -81,3 +82,5 @@ copies or substantial portions of the Software.
 [node-badge]: https://img.shields.io/badge/node-%3E%3D%208.0.0-brightgreen.svg
 [node]: https://nodejs.org/en/
 [dependencies-badge]: https://david-dm.org/cristian-gabbanini/fem-downloader.svg
+[build-status]: https://travis-ci.com/cristian-gabbanini/fem-downloader.svg?branch=master
+[repo-url]: https://travis-ci.com/cristian-gabbanini/fem-downloader

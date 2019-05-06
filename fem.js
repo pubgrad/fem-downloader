@@ -128,12 +128,11 @@ const downloadVideoLesson = page => async (
   return new Promise((resolve, reject) =>
     https.get(src, function(resp) {
       console.log(
-        `${new Date().toLocaleTimeString()}: Downloading: ${index}-${lessonTitle}`
+        `\n${new Date().toLocaleTimeString()}: Downloading: ${index}-${lessonTitle}`
       );
 
       const contentLength = parseInt(resp.headers['content-length']);
 
-      // init progress bar
       const bar = new _cliProgress.Bar({}, _cliProgress.Presets.shades_classic);
       let totalBytes = 0;
       bar.start(parseInt(contentLength / 8), 0);
@@ -145,6 +144,7 @@ const downloadVideoLesson = page => async (
       });
 
       resp.on('end', function() {
+        bar.update(totalBytes);
         bar.stop();
         file.end();
         resolve(true);
