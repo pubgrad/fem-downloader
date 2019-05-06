@@ -1,4 +1,23 @@
 {
+  "name": "fem-downloader",
+  "version": "1.0.0",
+  "description": "Course downloader for FrontendMasters.",
+  "main": "fem-downloader.js",
+  "homepage": "https://github.com/cristian-gabbanini/fem-downloader",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/cristian-gabbanini/fem-downloader.git"
+  },
+  "keywords": [
+    "downloader",
+    "frontend-masters",
+    "puppetter",
+    "cli",
+    "video-downloader",
+    "node-js",
+    "javascript"
+  ],
+  "author": "Cristian Gabbanini",
   "scripts": {
     "prettier": "prettier"
   },
