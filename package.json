@@ -3,7 +3,7 @@
     "prettier": "prettier"
   },
   "dependencies": {
-    "command-line-args": "^5.0.2",
+    "cli-progress": "^2.1.1",
     "commander": "^2.20.0",
     "crocks": "^0.9.4",
     "debounce": "^1.1.0",

@@ -1,17 +1,16 @@
-const Async = require("crocks/Async");
-const spinner = require("./spinner").spinner;
-const log = require("single-line-log").stdout;
-const Either = require("crocks/Either");
-const identity = require("crocks/combinators/identity");
-const partial = require("crocks/helpers/partial");
-const constant = require("crocks/combinators/constant");
-const prop = require("ramda/src/prop");
-const fs = require("fs");
-const https = require("https");
-const slugify = require("slugify");
-const Persist = require("./persist").Persist;
+const Async = require('crocks/Async');
+const Either = require('crocks/Either');
+const identity = require('crocks/combinators/identity');
+const partial = require('crocks/helpers/partial');
+const constant = require('crocks/combinators/constant');
+const prop = require('ramda/src/prop');
+const fs = require('fs');
+const https = require('https');
+const slugify = require('slugify');
+const Persist = require('./persist').Persist;
 const { restore, persist } = Persist;
 const { Left, Right } = Either;
+const _cliProgress = require('cli-progress');
 
 const stringToEither = s => (s.length ? Right(s) : Left(s));
 
@@ -48,21 +47,21 @@ const allLessonsFrom = (fromLesson, found = false) => lesson => {
   return false;
 };
 
-const buildDirTree = (courseSlug, fromLesson = "") => page =>
+const buildDirTree = (courseSlug, fromLesson = '') => page =>
   Async((rej, res) => {
     (async function() {
       const lessons = await page.evaluate(function getLessons() {
-        const titles = Array.from(document.querySelectorAll("h2.lessongroup"));
-        const lessons = Array.from(document.querySelectorAll("ul.LessonList"));
+        const titles = Array.from(document.querySelectorAll('h2.lessongroup'));
+        const lessons = Array.from(document.querySelectorAll('ul.LessonList'));
 
         const titleSlugs = titles.map(title => title.textContent);
 
         const result = lessons
           .map((list, index) => ({
-            [index]: Array.from(list.querySelectorAll("li a"))
+            [index]: Array.from(list.querySelectorAll('li a'))
           }))
           .map((lessons, index) =>
-            lessons[index].map(a => a.getAttribute("href"))
+            lessons[index].map(a => a.getAttribute('href'))
           )
           .map((lessons, index) => ({ [titleSlugs[index]]: lessons }));
 
@@ -108,18 +107,18 @@ const downloadVideoLesson = page => async (
   lessonUrl
 ) => {
   await page.goto(`${baseUrl}${lessonUrl}`, {
-    waitUnil: ["load", "domcontentloaded", "networkidle0"]
+    waitUnil: ['load', 'domcontentloaded', 'networkidle0']
   });
 
-  await page.waitForSelector("div.vjs-has-started");
+  await page.waitForSelector('div.vjs-has-started');
 
   const src = await page.evaluate(() => {
-    const video = document.querySelector("video.vjs-tech");
-    return Promise.resolve(video.getAttribute("src"));
+    const video = document.querySelector('video.vjs-tech');
+    return Promise.resolve(video.getAttribute('src'));
   });
 
-  await page.click("div.vjs-has-started");
-  const lessonTitles = lessonUrl.split("/");
+  await page.click('div.vjs-has-started');
+  const lessonTitles = lessonUrl.split('/');
 
   const lessonTitle = lessonTitles[lessonTitles.length - 2];
   const file = fs.createWriteStream(
@@ -129,15 +128,24 @@ const downloadVideoLesson = page => async (
   return new Promise((resolve, reject) =>
     https.get(src, function(resp) {
       console.log(
-        `${new Date().toLocaleTimeString()}: Downloading video: ${index}-${lessonTitle}`
+        `${new Date().toLocaleTimeString()}: Downloading: ${index}-${lessonTitle}`
       );
-      resp.on("data", function(chunk) {
+
+      const contentLength = parseInt(resp.headers['content-length']);
+
+      // init progress bar
+      const bar = new _cliProgress.Bar({}, _cliProgress.Presets.shades_classic);
+      let totalBytes = 0;
+      bar.start(parseInt(contentLength / 8), 0);
+
+      resp.on('data', function(chunk) {
         file.write(chunk);
-        log(spinner());
+        totalBytes = totalBytes + parseInt(chunk.length / 8);
+        bar.update(totalBytes);
       });
-      resp.on("end", function() {
-        log("");
-        console.log(`${new Date().toLocaleTimeString()}: Download finished`);
+
+      resp.on('end', function() {
+        bar.stop();
         file.end();
         resolve(true);
       });
@@ -158,7 +166,7 @@ const downloadVideos = (url, courseSlug) => ({ page, slugLessons }) => {
         index = index + 1;
       }
     }
-    res("YEEEEEAH!");
+    res('YEEEEEAH!');
   });
 };
 
