@@ -131,11 +131,11 @@ const downloadVideoLesson = page => async (
         `\n${new Date().toLocaleTimeString()}: Downloading: ${index}-${lessonTitle}`
       );
 
-      const contentLength = parseInt(resp.headers['content-length']);
+      const bytesLength = parseInt(resp.headers['content-length'] / 8);
 
       const bar = new _cliProgress.Bar({}, _cliProgress.Presets.shades_classic);
       let totalBytes = 0;
-      bar.start(parseInt(contentLength / 8), 0);
+      bar.start(bytesLength, 0);
 
       resp.on('data', function(chunk) {
         file.write(chunk);
@@ -144,7 +144,7 @@ const downloadVideoLesson = page => async (
       });
 
       resp.on('end', function() {
-        bar.update(totalBytes);
+        bar.update(bytesLength);
         bar.stop();
         file.end();
         resolve(true);

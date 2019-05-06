@@ -58,8 +58,8 @@ const questions = [
     return;
   }
 
-  [slug]
-    .map(title => femDownload(username, password, title, from))
-    .reduce((pipe, fn) => pipe.chain(() => fn), Async.Resolved())
-    .fork(e => log('Error: ', e), s => log('Download completed!'));
+  femDownload(username, password, slug, from).fork(
+    e => log('Error: ', e),
+    s => log('Download completed!')
+  );
 })();
