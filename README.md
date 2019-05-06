@@ -1,5 +1,8 @@
 # Frontend Masters video downloader
 
+[![License][licence-badge]](#license)
+[![Min NodeJs][node-badge]][node]
+
 Based on Nodejs and Puppeteer, you can launch it from the command line providing your credentials and it will download the course of your choice.
 
 ## Installation
@@ -72,3 +75,7 @@ furnished to do so, subject to the following conditions:
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 ```
+
+[licence-badge]: https://img.shields.io/badge/licence-MIT-yellowgreen.svg
+[node-badge]: https://img.shields.io/badge/node-%3E%3D%208.0.0-brightgreen.svg
+[node]: https://nodejs.org/en/
