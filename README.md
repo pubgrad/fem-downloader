@@ -40,9 +40,9 @@ Once the download starts you'll be shown a progress bar for the current lesson:
 ```
 
 1.  If not in headless mode, Puppeteer will open a browser window and will log in to Frontend Masters using the provided credentials.
-1.  After logging in, it will go to the main page of the course you selected and begin downloading its lessons one by one.
-1.  The course will be downloaded into the project root, in its own folder, and each lesson will have its slug name.
-1.  Each lesson group will have its separate folder and each lesson will be prepended with a number reflecting its order.
+2.  After logging in, it will go to the main page of the course you selected and begin downloading its lessons one by one.
+3.  The course will be downloaded into the project root, in its own folder, and each lesson will have its slug name.
+4.  Each lesson group will have its separate folder and each lesson will be prepended with a number reflecting its order.
 
 ## Notes
 
@@ -63,7 +63,7 @@ The sole purpose of this piece of software is to provide a way to Frontend Maste
 
 ## License
 
-```
+```text
 Copyright (c) Cristian Gabbanini - https://github.com/cristian-gabbanini
 
 MIT License
