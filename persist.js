@@ -1,4 +1,4 @@
-const curry = require("ramda/src/curry");
+const curry = require('ramda/src/curry');
 
 const Persist = (function Persist(storage = {}) {
   return {
@@ -6,7 +6,7 @@ const Persist = (function Persist(storage = {}) {
       storage[label] = value;
       return value;
     }),
-    restore: label => storage[label],
+    restore: (label) => storage[label],
     dump: () => console.log(storage)
   };
 })();
