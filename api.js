@@ -1,14 +1,14 @@
-const puppeteer = require('puppeteer');
-const Async = require('crocks/Async');
-const pipeK = require('crocks/helpers/pipeK');
-const Persist = require('./persist').Persist;
+const puppeteer = require("puppeteer");
+const Async = require("crocks/Async");
+const pipeK = require("crocks/helpers/pipeK");
+const Persist = require("./persist").Persist;
 const defaultUserAgent =
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.79 Safari/537.36';
-const curry = require('ramda/src/curry');
-const compose = require('ramda/src/compose');
-const Maybe = require('crocks/Maybe');
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.79 Safari/537.36";
+const curry = require("ramda/src/curry");
+const compose = require("ramda/src/compose");
+const Maybe = require("crocks/Maybe");
 const { Nothing } = Maybe;
-const I = a => a;
+const I = (a) => a;
 const { restore, persist } = Persist;
 
 // identityToAsync :: a → Async a
@@ -18,28 +18,28 @@ const identityToAsync = compose(
 );
 
 // foldMaybe :: Maybe Async a → Async a
-const foldMaybe = m => m.option(identityToAsync);
+const foldMaybe = (m) => m.option(identityToAsync);
 
 function api() {
-  const createBrowser = headless =>
+  const createBrowser = (headless) =>
     Async((rej, res) =>
       puppeteer
         .launch({
           headless,
-          args: ['--no-sandbox']
+          args: ["--no-sandbox"]
         })
-        .then(browser => persist('browser', browser))
+        .then((browser) => persist("browser", browser))
         .then(res)
         .catch(rej)
     );
 
   // getBrowser :: () → Async Browser
   const getBrowser = () =>
-    restore('browser') ? Async.Resolved(restore('browser')) : createBrowser;
+    restore("browser") ? Async.Resolved(restore("browser")) : createBrowser;
 
   // closeBrowser :: Async Browser → Async ()
   const closeBrowser = () =>
-    getBrowser().chain(browser =>
+    getBrowser().chain((browser) =>
       Async((rej, res) =>
         browser
           .close()
@@ -49,7 +49,7 @@ function api() {
     );
 
   // getNewPage :: Async Browser → Async Page
-  const getNewPage = browser =>
+  const getNewPage = (browser) =>
     Async((rej, res) =>
       browser
         .newPage()
@@ -58,42 +58,42 @@ function api() {
     );
 
   // goto :: String → Async Page → Async Page
-  const goto = url => page =>
+  const goto = (url) => (page) =>
     Async((rej, res) =>
       page
         .goto(url, {
           timeout: 25000,
-          waitUntil: ['domcontentloaded']
+          waitUntil: ["domcontentloaded"]
         })
         .then(res.bind(null, page))
-        .catch(message => rej(message))
+        .catch((message) => rej(message))
     );
 
   // enableJs :: Async Page → Async Page
-  const enableJs = page =>
+  const enableJs = (page) =>
     Async((_, res) => page.setJavaScriptEnabled(true).then(res(page)));
 
   // setUserAgent :: Async Page → Async Page
-  const setUserAgent = agent => page =>
+  const setUserAgent = (agent) => (page) =>
     Async((_, res) => page.setUserAgent(agent).then(res(page)));
 
   // getContent :: Async Page → Async String
-  const getContent = page =>
+  const getContent = (page) =>
     Async(
       (rej, res) =>
-        typeof page === 'object'
+        typeof page === "object"
           ? page
               .content()
               .then(res)
               .catch(res)
-          : rej('No page object available')
+          : rej("No page object available")
     );
 
   // failOnCaptcha :: Async Page → Async Page | Async Error
-  const failOnCaptcha = page =>
+  const failOnCaptcha = (page) =>
     Async((rej, res) =>
       page
-        .waitForSelector('.g-recaptcha', {
+        .waitForSelector(".g-recaptcha", {
           timeout: 1500
         })
         .then(
@@ -106,10 +106,10 @@ function api() {
     );
 
   // getText :: Async Page → Async String | Async Error
-  const getText = page =>
+  const getText = (page) =>
     Async(
       (rej, res) =>
-        typeof page !== 'string'
+        typeof page !== "string"
           ? page
               .evaluate(() => document.body.innerText)
               .then(res)
@@ -149,7 +149,7 @@ function api() {
     getNewPage,
     enableJs,
     setUserAgent(defaultUserAgent),
-    goto('https://api.ipify.org/'),
+    goto("https://api.ipify.org/"),
     getText
   );
 

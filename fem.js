@@ -1,35 +1,35 @@
-const Async = require('crocks/Async');
-const Either = require('crocks/Either');
-const identity = require('crocks/combinators/identity');
-const partial = require('crocks/helpers/partial');
-const constant = require('crocks/combinators/constant');
-const prop = require('ramda/src/prop');
-const fs = require('fs');
-const https = require('https');
-const slugify = require('slugify');
-const Persist = require('./persist').Persist;
+const Async = require("crocks/Async");
+const Either = require("crocks/Either");
+const identity = require("crocks/combinators/identity");
+const partial = require("crocks/helpers/partial");
+const constant = require("crocks/combinators/constant");
+const prop = require("ramda/src/prop");
+const fs = require("fs");
+const https = require("https");
+const slugify = require("slugify");
+const Persist = require("./persist").Persist;
 const { restore, persist } = Persist;
 const { Left, Right } = Either;
-const _cliProgress = require('cli-progress');
+const _cliProgress = require("cli-progress");
 
-const stringToEither = s => (s.length ? Right(s) : Left(s));
+const stringToEither = (s) => (s.length ? Right(s) : Left(s));
 
-const femGoto = url => page =>
+const femGoto = (url) => (page) =>
   Async((rej, res) => {
-    page.goto(url).then(a => res(page));
+    page.goto(url).then((a) => res(page));
   });
 
-const femLogin = (username, password) => page => {
+const femLogin = (username, password) => (page) => {
   return Async((rej, res) => {
     (async function() {
       try {
-        await page.type('#username', username, { delay: 50 });
-        await page.type('#password', 'dash-dash-432', { delay: 50 });
-        await page.type('#password', String.fromCharCode(13));
-        await page.waitForSelector('div.Message.MessageAlert', { timeout: 0 });
-        await page.type('#password', password, { delay: 50 });
-        await page.type('#password', String.fromCharCode(13));
-        await page.waitForSelector('h1.DashboardHeader', { timeout: 0 });
+        await page.type("#username", username, { delay: 50 });
+        await page.type("#password", "dash-dash-432", { delay: 50 });
+        await page.type("#password", String.fromCharCode(13));
+        await page.waitForSelector("div.Message.MessageAlert", { timeout: 0 });
+        await page.type("#password", password, { delay: 50 });
+        await page.type("#password", String.fromCharCode(13));
+        await page.waitForSelector("h1.DashboardHeader", { timeout: 0 });
       } catch (e) {
         rej(e);
       }
@@ -38,7 +38,7 @@ const femLogin = (username, password) => page => {
   });
 };
 
-const allLessonsFrom = (fromLesson, found = false) => lesson => {
+const allLessonsFrom = (fromLesson, found = false) => (lesson) => {
   if (found) return true;
   if (lesson.includes(fromLesson)) {
     found = true;
@@ -47,28 +47,28 @@ const allLessonsFrom = (fromLesson, found = false) => lesson => {
   return false;
 };
 
-const buildDirTree = (courseSlug, fromLesson = '') => page =>
+const buildDirTree = (courseSlug, fromLesson = "") => (page) =>
   Async((rej, res) => {
     (async function() {
       const lessons = await page.evaluate(function getLessons() {
-        const titles = Array.from(document.querySelectorAll('h2.lessongroup'));
-        const lessons = Array.from(document.querySelectorAll('ul.LessonList'));
+        const titles = Array.from(document.querySelectorAll("h2.lessongroup"));
+        const lessons = Array.from(document.querySelectorAll("ul.LessonList"));
 
-        const titleSlugs = titles.map(title => title.textContent);
+        const titleSlugs = titles.map((title) => title.textContent);
 
         const result = lessons
           .map((list, index) => ({
-            [index]: Array.from(list.querySelectorAll('li a'))
+            [index]: Array.from(list.querySelectorAll("li a"))
           }))
           .map((lessons, index) =>
-            lessons[index].map(a => a.getAttribute('href'))
+            lessons[index].map((a) => a.getAttribute("href"))
           )
           .map((lessons, index) => ({ [titleSlugs[index]]: lessons }));
 
         return Promise.resolve(result);
       });
 
-      const newKeys = lessons.map(o =>
+      const newKeys = lessons.map((o) =>
         slugify(Object.keys(o)[0].toLowerCase())
       );
       {
@@ -78,11 +78,13 @@ const buildDirTree = (courseSlug, fromLesson = '') => page =>
             index: index,
             lessons: l[Object.keys(l)[0]]
           }))
-          .map(lessonGroup =>
+          .map((lessonGroup) =>
             stringToEither(fromLesson)
-              .map(fromLesson => allLessonsFrom(fromLesson))
-              .map(onlyFromLesson => lessonGroup.lessons.filter(onlyFromLesson))
-              .either(constant(lessonGroup), ll =>
+              .map((fromLesson) => allLessonsFrom(fromLesson))
+              .map((onlyFromLesson) =>
+                lessonGroup.lessons.filter(onlyFromLesson)
+              )
+              .either(constant(lessonGroup), (ll) =>
                 Object.assign({}, lessonGroup, { lessons: ll })
               )
           );
@@ -90,16 +92,16 @@ const buildDirTree = (courseSlug, fromLesson = '') => page =>
         if (!fs.existsSync(courseSlug)) fs.mkdirSync(courseSlug);
 
         slugLessons
-          .map(lesson => lesson.title)
-          .map(title => `./${courseSlug}/${title}`)
-          .map(dir => (!fs.existsSync(dir) ? fs.mkdirSync(dir) : null));
+          .map((lesson) => lesson.title)
+          .map((title) => `./${courseSlug}/${title}`)
+          .map((dir) => (!fs.existsSync(dir) ? fs.mkdirSync(dir) : null));
 
         res({ page, slugLessons });
       }
     })();
   });
 
-const downloadVideoLesson = page => async (
+const downloadVideoLesson = (page) => async (
   lessonGroup,
   index,
   courseSlug,
@@ -107,18 +109,18 @@ const downloadVideoLesson = page => async (
   lessonUrl
 ) => {
   await page.goto(`${baseUrl}${lessonUrl}`, {
-    waitUnil: ['load', 'domcontentloaded', 'networkidle0']
+    waitUnil: ["load", "domcontentloaded", "networkidle0"]
   });
 
-  await page.waitForSelector('div.vjs-has-started');
+  await page.waitForSelector("div.vjs-has-started");
 
   const src = await page.evaluate(() => {
-    const video = document.querySelector('video.vjs-tech');
-    return Promise.resolve(video.getAttribute('src'));
+    const video = document.querySelector("video.vjs-tech");
+    return Promise.resolve(video.getAttribute("src"));
   });
 
-  await page.click('div.vjs-has-started');
-  const lessonTitles = lessonUrl.split('/');
+  await page.click("div.vjs-has-started");
+  const lessonTitles = lessonUrl.split("/");
 
   const lessonTitle = lessonTitles[lessonTitles.length - 2];
   const file = fs.createWriteStream(
@@ -131,19 +133,19 @@ const downloadVideoLesson = page => async (
         `\n${new Date().toLocaleTimeString()}: Downloading: ${index}-${lessonTitle}`
       );
 
-      const bytesLength = parseInt(resp.headers['content-length'] / 8);
+      const bytesLength = parseInt(resp.headers["content-length"] / 8);
 
       const bar = new _cliProgress.Bar({}, _cliProgress.Presets.shades_classic);
       let totalBytes = 0;
       bar.start(bytesLength, 0);
 
-      resp.on('data', function(chunk) {
+      resp.on("data", function(chunk) {
         file.write(chunk);
         totalBytes = totalBytes + parseInt(chunk.length / 8);
         bar.update(totalBytes);
       });
 
-      resp.on('end', function() {
+      resp.on("end", function() {
         bar.update(bytesLength);
         bar.stop();
         file.end();
@@ -166,7 +168,7 @@ const downloadVideos = (url, courseSlug) => ({ page, slugLessons }) => {
         index = index + 1;
       }
     }
-    res('YEEEEEAH!');
+    res("YEEEEEAH!");
   });
 };
 
